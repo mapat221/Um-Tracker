@@ -48,9 +48,9 @@ class TrackingFactory:
             if row.get("ФИО ученика") == student_name:
                 subject = subject_result(
                     name=row["Предметы"],
-                    webinars=float(row["Ср.просмотренность"].replace(",", ".")),
-                    homeworks=float(
-                        row["Ср.сдаваемость - только регулярные дз"].replace(",", ".")
+                    webinars=self.parse_value(row["Ср.просмотренность"]),
+                    homeworks=self.parse_value(
+                        row["Ср.сдаваемость - только регулярные дз"]
                     ),
                 )
                 student_subjects.append(subject)
@@ -118,3 +118,20 @@ class TrackingFactory:
             )
 
         return "\n".join(messages)
+
+    @staticmethod
+    def parse_value(raw_value: str) -> float:
+        if not raw_value:
+            return 0.0
+
+        cleaned_value = raw_value.replace("%", "").replace(",", ".").strip()
+
+        try:
+            numeric_value = float(cleaned_value)
+        except ValueError:
+            return 0.0
+
+        if "%" in raw_value or numeric_value > 1:
+            return numeric_value / 100
+
+        return numeric_value
